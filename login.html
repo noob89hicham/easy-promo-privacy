@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>جلب صفحات فيسبوك والتوكنات</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+      text-align: center;
+    }
+    #status {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      text-align: right;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    }
+    button {
+      background-color: #1877f2;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #145dbf;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📄 تسجيل دخول فيسبوك وجلب الصفحات</h1>
+
+<button onclick="fbLogin()">🔐 تسجيل دخول فيسبوك</button>
+
+<div id="status">👈 اضغط على الزر لعرض الصفحات التي تديرها</div>
+
+<script>
+  // App ID الخاص بك
+  const APP_ID = '1013619637256210';
+
+  // تحميل SDK
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : APP_ID,
+      cookie     : true,
+      xfbml      : false,
+      version    : 'v17.0'
+    });
+  };
+
+  (function(d, s, id){
+     let js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) return;
+     js = d.createElement(s); js.id = id;
+     js.src = "https://connect.facebook.net/ar_AR/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+  function fbLogin() {
+    FB.login(function(response) {
+      if (response.authResponse) {
+        document.getElementById('status').innerText = '✅ تم تسجيل الدخول بنجاح...\n🔄 جاري جلب الصفحات...';
+        getPages();
+      } else {
+        document.getElementById('status').innerText = '❌ تم إلغاء تسجيل الدخول أو لم تمنح الصلاحيات المطلوبة.';
+      }
+    }, {
+      scope: 'pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_metadata',
+      return_scopes: true
+    });
+  }
+
+  function getPages() {
+    FB.api('/me/accounts', function(response) {
+      if (response.error) {
+        document.getElementById('status').innerText = '❌ خطأ: ' + response.error.message;
+        return;
+      }
+
+      if (!response.data || response.data.length === 0) {
+        document.getElementById('status').innerText = '⚠️ لم يتم العثور على صفحات تديرها.';
+        return;
+      }
+
+      let output = '✅ الصفحات التي تديرها:\n\n';
+      response.data.forEach(page => {
+        output += `📄 الاسم: ${page.name}\n`;
+        output += `🆔 معرف الصفحة: ${page.id}\n`;
+        output += `🔑 التوكن: ${page.access_token}\n\n`;
+      });
+
+      document.getElementById('status').innerText = output;
+    });
+  }
+</script>
+
+</body>
+</html>
